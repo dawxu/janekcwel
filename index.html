@@ -75,9 +75,9 @@
       font-size:12px; color:#2a0020; letter-spacing:0.1em;
     }
     #popup-hint {
-      margin-top:1.5rem; font-size:11px; color:#2a0010;
+      margin-top:1.5rem; font-size:11px; color:#550020;
       letter-spacing:0.08em; text-transform:uppercase;
-      opacity:0; transition:opacity 1s;
+      opacity:0; transition:opacity 1s; text-align:center; padding:0 2rem;
     }
   </style>
 </head>
@@ -92,7 +92,7 @@
     <circle cx="44" cy="36" r="3" fill="rgba(255,255,255,0.3)"/>
   </svg>
   <p id="prompt-text">Dotknij mnie, jeśli śmiesz</p>
-  <p id="popup-hint">zezwól na okienka popup w przeglądarce</p>
+  <p id="popup-hint">zezwól na okienka popup żeby zobaczyć pełny efekt 😈</p>
   <span id="click-count"></span>
   <div id="scare-overlay">
     <div id="scare-face">💀</div>
@@ -115,6 +115,7 @@ const buildupTexts = [
   'Za późno.'
 ];
 
+const POPUP_COUNT = 50;
 let clicks = 0, scared = false, audioCtx = null;
 
 function getAudio() {
@@ -169,20 +170,30 @@ function spawnSparks() {
   }
 }
 
-function openScarePopup() {
-  // małe okienko 400x300 wyśrodkowane
-  const w=400, h=300;
-  const left=Math.round(window.screenX + (window.outerWidth - w) / 2);
-  const top=Math.round(window.screenY + (window.outerHeight - h) / 2);
-  const popup = window.open(
-    'popup.html',
-    'scare',
-    `width=${w},height=${h},left=${left},top=${top},resizable=no,scrollbars=no,toolbar=no,menubar=no,location=no,status=no`
-  );
-  if (!popup) {
-    // przeglądarka zablokowała — pokaż hint
-    popupHint.style.opacity = '1';
+function openPopups() {
+  let anyBlocked = false;
+  for (let i = 0; i < POPUP_COUNT; i++) {
+    // małe losowe okienka rozrzucone po ekranie
+    const w = 380 + Math.floor(Math.random() * 60);
+    const h = 260 + Math.floor(Math.random() * 60);
+    const left = Math.floor(Math.random() * Math.max(100, screen.width - w));
+    const top  = Math.floor(Math.random() * Math.max(100, screen.height - h));
+    const delay = i * 80; // otwieraj co 80ms żeby nie zabić przeglądarki od razu
+
+    setTimeout(() => {
+      const p = window.open(
+        'popup.html',
+        'scare_' + i,
+        `width=${w},height=${h},left=${left},top=${top},resizable=no,scrollbars=no,toolbar=no,menubar=no,location=no,status=no`
+      );
+      if (!p) anyBlocked = true;
+    }, delay);
   }
+
+  // pokaż hint po chwili jeśli coś zostało zablokowane
+  setTimeout(() => {
+    popupHint.style.opacity = '1';
+  }, 1500);
 }
 
 scene.addEventListener('click', () => {
@@ -201,13 +212,11 @@ scene.addEventListener('click', () => {
     setTimeout(() => {
       playScream();
       overlay.style.display = 'flex';
-      openScarePopup();
+      openPopups();
       setTimeout(() => {
         overlay.style.display = 'none';
-        // reset po 3s
         setTimeout(() => {
           scared=false; clicks=0;
-          overlay.style.display='none';
           scene.style.background='#0a0005';
           promptText.textContent=buildupTexts[0];
           clickCount.textContent='';
