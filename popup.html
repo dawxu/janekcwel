@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8"/>
+  <title>BOO!</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: #000;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      font-family: monospace;
+      animation: flash 0.1s ease-out;
+    }
+    @keyframes flash { from{background:#fff} to{background:#000} }
+    .content { text-align: center; }
+    .face { font-size: 120px; animation: bounce 0.2s infinite alternate; display:block; }
+    @keyframes bounce {
+      from{transform:scale(1) rotate(-5deg)}
+      to{transform:scale(1.1) rotate(5deg)}
+    }
+    h1 { color: #ff0000; font-size: 48px; letter-spacing: 0.1em; margin-top: 1rem; animation: shake 0.15s infinite; }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)}
+      33%{transform:translateX(-6px)}
+      66%{transform:translateX(6px)}
+    }
+    p { color: #660000; font-size: 14px; margin-top: 1rem; letter-spacing: 0.2em; }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <span class="face">💀</span>
+    <h1>ZNALAZŁEM CIĘ</h1>
+    <p>nie możesz uciec...</p>
+  </div>
+  <script>
+    // odtwórz krzyk
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const dur = 1.5;
+    const o1 = ctx.createOscillator(), o2 = ctx.createOscillator();
+    const g = ctx.createGain(), d = ctx.createWaveShaper();
+    const curve = new Float32Array(256);
+    for (let i=0;i<256;i++){const x=(i*2)/256-1;curve[i]=((Math.PI+400)*x)/(Math.PI+400*Math.abs(x));}
+    d.curve=curve;
+    o1.type='sawtooth'; o2.type='square';
+    o1.frequency.setValueAtTime(80,ctx.currentTime);
+    o1.frequency.exponentialRampToValueAtTime(1200,ctx.currentTime+0.3);
+    o1.frequency.exponentialRampToValueAtTime(200,ctx.currentTime+dur);
+    o2.frequency.setValueAtTime(120,ctx.currentTime);
+    o2.frequency.exponentialRampToValueAtTime(800,ctx.currentTime+0.2);
+    o2.frequency.exponentialRampToValueAtTime(150,ctx.currentTime+dur);
+    g.gain.setValueAtTime(0.5,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+dur);
+    [o1,o2].forEach(o=>{o.connect(d);o.start();o.stop(ctx.currentTime+dur);});
+    d.connect(g); g.connect(ctx.destination);
+  </script>
+</body>
+</html>
