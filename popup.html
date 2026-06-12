@@ -2,58 +2,177 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8"/>
-  <title>BOO!</title>
+  <title>👀</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      background: #000;
-      display: flex; align-items: center; justify-content: center;
-      min-height: 100vh;
-      font-family: monospace;
-      animation: flash 0.1s ease-out;
+    html, body {
+      width:100%; height:100%;
+      background:#000;
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden;
     }
+    body { animation: flash 0.08s ease-out; }
     @keyframes flash { from{background:#fff} to{background:#000} }
-    .content { text-align: center; }
-    .face { font-size: 120px; animation: bounce 0.2s infinite alternate; display:block; }
-    @keyframes bounce {
-      from{transform:scale(1) rotate(-5deg)}
-      to{transform:scale(1.1) rotate(5deg)}
+    #container {
+      text-align:center;
+      animation: zoom-in 0.15s cubic-bezier(0.175,0.885,0.32,1.275);
     }
-    h1 { color: #ff0000; font-size: 48px; letter-spacing: 0.1em; margin-top: 1rem; animation: shake 0.15s infinite; }
-    @keyframes shake {
-      0%,100%{transform:translateX(0)}
-      33%{transform:translateX(-6px)}
-      66%{transform:translateX(6px)}
+    @keyframes zoom-in {
+      from{transform:scale(0.3);opacity:0}
+      to{transform:scale(1);opacity:1}
     }
-    p { color: #660000; font-size: 14px; margin-top: 1rem; letter-spacing: 0.2em; }
+    img {
+      width:100%; max-width:320px; height:auto;
+      display:block; margin:0 auto;
+      animation: glitch 0.08s infinite;
+      border:4px solid #ff0000;
+      filter: hue-rotate(0deg);
+    }
+    @keyframes glitch {
+      0%  { transform:translate(0,0) skewX(0deg); filter:hue-rotate(0deg); }
+      10% { transform:translate(-3px,1px) skewX(2deg); filter:hue-rotate(90deg); }
+      20% { transform:translate(3px,-1px) skewX(-1deg); filter:hue-rotate(180deg); }
+      30% { transform:translate(-2px,2px) skewX(1deg); filter:hue-rotate(270deg); }
+      40% { transform:translate(2px,-2px) skewX(-2deg); filter:hue-rotate(0deg); }
+      50% { transform:translate(0,0) skewX(0deg); filter:hue-rotate(45deg); }
+      60% { transform:translate(-4px,0px) skewX(3deg); filter:hue-rotate(120deg); }
+      70% { transform:translate(4px,1px) skewX(-2deg); filter:hue-rotate(200deg); }
+      80% { transform:translate(-1px,-3px) skewX(1deg); filter:hue-rotate(300deg); }
+      90% { transform:translate(1px,3px) skewX(-1deg); filter:hue-rotate(60deg); }
+      100%{ transform:translate(0,0) skewX(0deg); filter:hue-rotate(0deg); }
+    }
+    #txt {
+      color:#ff0000; font-size:18px; font-weight:bold;
+      font-family:monospace; letter-spacing:0.05em;
+      margin-top:8px;
+      animation: blink 0.15s infinite;
+      text-shadow: 2px 0 #00ffff, -2px 0 #ff00ff;
+    }
+    @keyframes blink {
+      0%,49%{opacity:1} 50%,100%{opacity:0}
+    }
   </style>
 </head>
 <body>
-  <div class="content">
-    <span class="face">💀</span>
-    <h1>ZNALAZŁEM CIĘ</h1>
-    <p>nie możesz uciec...</p>
+  <div id="container">
+    <img src="togif.gif" alt="👀"/>
+    <div id="txt">BŁĄD KRYTYCZNY — 0x0000DEAD</div>
   </div>
+
   <script>
-    // odtwórz krzyk
+  try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const dur = 1.5;
-    const o1 = ctx.createOscillator(), o2 = ctx.createOscillator();
-    const g = ctx.createGain(), d = ctx.createWaveShaper();
-    const curve = new Float32Array(256);
-    for (let i=0;i<256;i++){const x=(i*2)/256-1;curve[i]=((Math.PI+400)*x)/(Math.PI+400*Math.abs(x));}
-    d.curve=curve;
-    o1.type='sawtooth'; o2.type='square';
-    o1.frequency.setValueAtTime(80,ctx.currentTime);
-    o1.frequency.exponentialRampToValueAtTime(1200,ctx.currentTime+0.3);
-    o1.frequency.exponentialRampToValueAtTime(200,ctx.currentTime+dur);
-    o2.frequency.setValueAtTime(120,ctx.currentTime);
-    o2.frequency.exponentialRampToValueAtTime(800,ctx.currentTime+0.2);
-    o2.frequency.exponentialRampToValueAtTime(150,ctx.currentTime+dur);
-    g.gain.setValueAtTime(0.5,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+dur);
-    [o1,o2].forEach(o=>{o.connect(d);o.start();o.stop(ctx.currentTime+dur);});
-    d.connect(g); g.connect(ctx.destination);
+    let t = ctx.currentTime + 0.05;
+
+    // --- GŁÓWNY PISK AWARYJNY ---
+    // symuluje umierający zasilacz/dysk twardy:
+    // krótkie wysokie piski z modulacją i przesterem
+
+    function beep(freq, start, dur, vol) {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const dist = ctx.createWaveShaper();
+      // lekki przester
+      const curve = new Float32Array(256);
+      for(let i=0;i<256;i++){const x=(i*2)/256-1;curve[i]=((Math.PI+200)*x)/(Math.PI+200*Math.abs(x));}
+      dist.curve = curve;
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, start);
+      osc.frequency.setValueAtTime(freq * 0.98, start + dur * 0.5);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(vol, start + 0.005);
+      gain.gain.setValueAtTime(vol, start + dur - 0.008);
+      gain.gain.linearRampToValueAtTime(0, start + dur);
+      osc.connect(dist); dist.connect(gain); gain.connect(ctx.destination);
+      osc.start(start); osc.stop(start + dur + 0.01);
+    }
+
+    function noise(start, dur, vol) {
+      const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for(let i=0;i<data.length;i++) data[i] = (Math.random()*2-1)*0.3;
+      const src  = ctx.createBufferSource();
+      const gain = ctx.createGain();
+      const filt = ctx.createBiquadFilter();
+      filt.type = 'bandpass';
+      filt.frequency.value = 3000 + Math.random()*2000;
+      filt.Q.value = 8;
+      src.buffer = buf;
+      gain.gain.setValueAtTime(vol, start);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+      src.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+      src.start(start); src.stop(start + dur);
+    }
+
+    // sekwencja: pisk awaryjny POST BIOSu — długi, potem serii krótkich
+    // długi pisk startowy
+    beep(1760, t,       0.9,  0.4);
+    beep(1760, t+1.05,  0.9,  0.4);
+    // przerwa + serie trzech krótkich
+    beep(1760, t+2.2,   0.12, 0.5);
+    beep(1760, t+2.38,  0.12, 0.5);
+    beep(1760, t+2.56,  0.12, 0.5);
+    // trzask + szum jak zgon dysku
+    noise(t+2.8, 0.15, 0.6);
+    beep(880,   t+2.82, 0.08, 0.3);
+    noise(t+3.0, 0.08, 0.4);
+
+    // po 3.5s — pętla uciążliwego piszczenia nie do zamknięcia
+    function annoyingLoop() {
+      let lt = ctx.currentTime;
+      // losowe piski wysokie + zakłócenia
+      const patterns = [
+        // wysoki ciągły z drżeniem
+        () => {
+          const osc = ctx.createOscillator();
+          const lfo = ctx.createOscillator();
+          const lfoGain = ctx.createGain();
+          const gain = ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.value = 2200 + Math.random()*400;
+          lfo.type = 'sine';
+          lfo.frequency.value = 8 + Math.random()*12;
+          lfoGain.gain.value = 80;
+          lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+          gain.gain.setValueAtTime(0.35, lt);
+          gain.gain.linearRampToValueAtTime(0, lt + 0.6);
+          osc.connect(gain); gain.connect(ctx.destination);
+          lfo.start(lt); osc.start(lt);
+          lfo.stop(lt+0.65); osc.stop(lt+0.65);
+        },
+        // szybkie krótkie piski
+        () => {
+          for(let i=0;i<5;i++) {
+            beep(1200+Math.random()*1200, lt+i*0.08, 0.06, 0.4);
+          }
+        },
+        // opadający pisk jak umierający silnik
+        () => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(3000, lt);
+          osc.frequency.exponentialRampToValueAtTime(200, lt+0.5);
+          gain.gain.setValueAtTime(0.3, lt);
+          gain.gain.exponentialRampToValueAtTime(0.001, lt+0.55);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(lt); osc.stop(lt+0.6);
+        },
+        // szum elektryczny
+        () => { noise(lt, 0.2, 0.5); noise(lt+0.25, 0.15, 0.4); },
+      ];
+
+      const fn = patterns[Math.floor(Math.random()*patterns.length)];
+      fn();
+    }
+
+    // start pętli po sekwencji startowej
+    setTimeout(() => {
+      annoyingLoop();
+      setInterval(annoyingLoop, 500 + Math.random()*300);
+    }, 3600);
+
+  } catch(e){}
   </script>
 </body>
 </html>
