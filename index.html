@@ -3,61 +3,100 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Wejdź, jeśli śmiesz...</title>
+  <title>Słodki chomiczek 🐹</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      background:#000;
+      background:#1a0010;
       display:flex; align-items:center; justify-content:center;
       min-height:100vh; font-family:monospace;
+      overflow:hidden;
     }
     #scene {
       width:100vw; min-height:100vh;
-      background:#0a0005;
       display:flex; flex-direction:column;
       align-items:center; justify-content:center;
-      cursor:pointer; user-select:none;
       position:relative; overflow:hidden;
-      transition:background 0.3s;
-    }
-    #scene.shaking { animation:shake 0.4s ease-in-out; }
-    @keyframes shake {
-      0%,100%{transform:translate(0,0)}
-      20%{transform:translate(-8px,4px)}
-      40%{transform:translate(8px,-4px)}
-      60%{transform:translate(-6px,6px)}
-      80%{transform:translate(6px,-2px)}
-    }
-    #prompt-text {
-      color:#4a004a; font-size:18px;
-      letter-spacing:0.15em; text-transform:uppercase;
-      animation:flicker 3s infinite; text-align:center; padding:0 2rem;
-    }
-    @keyframes flicker {
-      0%,100%{opacity:1} 50%{opacity:0.3} 87%{opacity:0.5} 89%{opacity:1}
-    }
-    #eye {
-      width:100px; height:100px; margin-bottom:2rem;
-      animation:pulse-eye 2s infinite ease-in-out;
-    }
-    @keyframes pulse-eye {
-      0%,100%{transform:scale(1)} 50%{transform:scale(1.12)}
     }
     #vignette {
       position:absolute; inset:0;
-      background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.85) 100%);
+      background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
       pointer-events:none;
     }
     #particles { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
     .spark {
       position:absolute; width:2px; height:2px;
-      background:#ff004c; border-radius:50%;
+      background:#ff66cc; border-radius:50%;
       animation:spark-fall linear forwards;
     }
     @keyframes spark-fall {
       from{transform:translateY(-10px);opacity:1}
       to{transform:translateY(110vh);opacity:0}
     }
+
+    #title {
+      color:#ffaadd;
+      font-size:22px;
+      letter-spacing:0.08em;
+      text-align:center;
+      margin-bottom:1.5rem;
+      animation:flicker 4s infinite;
+      text-shadow: 0 0 20px #ff44aa;
+      padding: 0 1rem;
+    }
+    @keyframes flicker {
+      0%,100%{opacity:1} 50%{opacity:0.8} 87%{opacity:0.6} 89%{opacity:1}
+    }
+
+    #hamster-wrap {
+      position:relative; cursor:pointer;
+      transition: transform 0.1s;
+    }
+    #hamster-wrap:hover { transform: scale(1.05); }
+    #hamster-wrap:active { transform: scale(0.95); }
+
+    #hamster {
+      width:260px; height:260px;
+      border-radius:50%;
+      object-fit:cover;
+      border:4px solid #ff88cc;
+      box-shadow: 0 0 30px #ff44aa, 0 0 60px #aa0044;
+      display:block;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100%{transform:translateY(0px)}
+      50%{transform:translateY(-10px)}
+    }
+
+    #hamster-wrap.clicked #hamster {
+      animation: shake-img 0.4s ease-in-out;
+    }
+    @keyframes shake-img {
+      0%,100%{transform:translate(0,0)}
+      20%{transform:translate(-6px,3px)}
+      40%{transform:translate(6px,-3px)}
+      60%{transform:translate(-4px,5px)}
+      80%{transform:translate(4px,-2px)}
+    }
+
+    #click-hint {
+      color:#aa4466;
+      font-size:12px;
+      letter-spacing:0.15em;
+      text-transform:uppercase;
+      margin-top:1rem;
+      animation: pulse-hint 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse-hint {
+      0%,100%{opacity:0.4} 50%{opacity:1}
+    }
+
+    #click-count {
+      position:fixed; bottom:18px; right:22px;
+      font-size:12px; color:#440022; letter-spacing:0.1em;
+    }
+
     #scare-overlay {
       display:none; position:fixed; inset:0;
       background:#fff;
@@ -70,12 +109,9 @@
       from{transform:scale(1) rotate(-3deg)}
       to{transform:scale(1.08) rotate(3deg)}
     }
-    #click-count {
-      position:fixed; bottom:18px; right:22px;
-      font-size:12px; color:#2a0020; letter-spacing:0.1em;
-    }
+
     #popup-hint {
-      margin-top:1.5rem; font-size:11px; color:#550020;
+      margin-top:1.2rem; font-size:11px; color:#660033;
       letter-spacing:0.08em; text-transform:uppercase;
       opacity:0; transition:opacity 1s; text-align:center; padding:0 2rem;
     }
@@ -85,146 +121,126 @@
 <div id="scene">
   <div id="vignette"></div>
   <div id="particles"></div>
-  <svg id="eye" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="40" cy="40" rx="36" ry="24" fill="none" stroke="#6a006a" stroke-width="2"/>
-    <circle cx="40" cy="40" r="14" fill="#3a0030"/>
-    <circle cx="40" cy="40" r="8" fill="#c000c0"/>
-    <circle cx="44" cy="36" r="3" fill="rgba(255,255,255,0.3)"/>
-  </svg>
-  <p id="prompt-text">Dotknij mnie, jeśli śmiesz</p>
+
+  <p id="title">Dotknij tego słodkiego chomiczka 🐹</p>
+
+  <div id="hamster-wrap">
+    <img id="hamster" src="togif.gif" alt="chomiczek"/>
+  </div>
+
+  <p id="click-hint">kliknij mnie!</p>
   <p id="popup-hint">zezwól na okienka popup żeby zobaczyć pełny efekt 😈</p>
   <span id="click-count"></span>
+
   <div id="scare-overlay">
     <div id="scare-face">💀</div>
   </div>
 </div>
 
-<script>
-const scene      = document.getElementById('scene');
-const overlay    = document.getElementById('scare-overlay');
-const clickCount = document.getElementById('click-count');
-const promptText = document.getElementById('prompt-text');
-const eyeEl      = document.getElementById('eye');
-const popupHint  = document.getElementById('popup-hint');
+<!-- dźwięk — załadowany z góry -->
+<audio id="mem-audio" src="dzwiekmem.mp3" loop preload="auto"></audio>
 
-const buildupTexts = [
-  'Dotknij mnie, jeśli śmiesz',
-  'Czy naprawdę chcesz wiedzieć?',
-  'Ostrzegałem...',
-  'Ostatnia szansa...',
-  'Za późno.'
-];
+<script>
+const hamsterWrap = document.getElementById('hamster-wrap');
+const overlay     = document.getElementById('scare-overlay');
+const clickCount  = document.getElementById('click-count');
+const popupHint   = document.getElementById('popup-hint');
+const clickHint   = document.getElementById('click-hint');
+const title       = document.getElementById('title');
+const audio       = document.getElementById('mem-audio');
 
 const POPUP_COUNT = 50;
-let clicks = 0, scared = false, audioCtx = null;
+let clicks = 0, scared = false;
 
-function getAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
-}
-
-function playScream() {
-  try {
-    const ctx=getAudio(), dur=1.4;
-    const o1=ctx.createOscillator(), o2=ctx.createOscillator();
-    const g=ctx.createGain(), d=ctx.createWaveShaper();
-    const curve=new Float32Array(256);
-    for(let i=0;i<256;i++){const x=(i*2)/256-1;curve[i]=((Math.PI+400)*x)/(Math.PI+400*Math.abs(x));}
-    d.curve=curve;
-    o1.type='sawtooth'; o2.type='square';
-    o1.frequency.setValueAtTime(80,ctx.currentTime);
-    o1.frequency.exponentialRampToValueAtTime(1200,ctx.currentTime+0.3);
-    o1.frequency.exponentialRampToValueAtTime(200,ctx.currentTime+dur);
-    o2.frequency.setValueAtTime(120,ctx.currentTime);
-    o2.frequency.exponentialRampToValueAtTime(800,ctx.currentTime+0.2);
-    o2.frequency.exponentialRampToValueAtTime(150,ctx.currentTime+dur);
-    g.gain.setValueAtTime(0.4,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+dur);
-    [o1,o2].forEach(o=>{o.connect(d);o.start();o.stop(ctx.currentTime+dur);});
-    d.connect(g); g.connect(ctx.destination);
-  } catch(e){}
-}
-
-function playCreak() {
-  try {
-    const ctx=getAudio(), o=ctx.createOscillator(), g=ctx.createGain();
-    o.type='sawtooth';
-    o.frequency.setValueAtTime(200+Math.random()*100,ctx.currentTime);
-    o.frequency.linearRampToValueAtTime(100,ctx.currentTime+0.3);
-    g.gain.setValueAtTime(0.07,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.35);
-    o.connect(g); g.connect(ctx.destination);
-    o.start(); o.stop(ctx.currentTime+0.35);
-  } catch(e){}
-}
+const buildupTitles = [
+  'Dotknij tego słodkiego chomiczka 🐹',
+  'Och, jaki słodki chomiczek... 🐹',
+  'Serio, kliknij jeszcze raz 🐹',
+  'Ostatni raz, obiecuję... 😇',
+  'Za. Późno. 😈'
+];
 
 function spawnSparks() {
-  const c=document.getElementById('particles');
-  for(let i=0;i<14;i++){
+  const c = document.getElementById('particles');
+  for(let i=0;i<16;i++){
     const s=document.createElement('div'); s.className='spark';
     s.style.left=(Math.random()*100)+'%';
     s.style.animationDuration=(0.8+Math.random()*1.4)+'s';
-    s.style.animationDelay=(Math.random()*0.4)+'s';
+    s.style.animationDelay=(Math.random()*0.3)+'s';
     s.style.width=s.style.height=(1+Math.random()*3)+'px';
     c.appendChild(s); setTimeout(()=>s.remove(),2200);
   }
 }
 
-function openPopups() {
-  let anyBlocked = false;
-  for (let i = 0; i < POPUP_COUNT; i++) {
-    // małe losowe okienka rozrzucone po ekranie
-    const w = 380 + Math.floor(Math.random() * 60);
-    const h = 260 + Math.floor(Math.random() * 60);
-    const left = Math.floor(Math.random() * Math.max(100, screen.width - w));
-    const top  = Math.floor(Math.random() * Math.max(100, screen.height - h));
-    const delay = i * 80; // otwieraj co 80ms żeby nie zabić przeglądarki od razu
-
-    setTimeout(() => {
-      const p = window.open(
-        'popup.html',
-        'scare_' + i,
-        `width=${w},height=${h},left=${left},top=${top},resizable=no,scrollbars=no,toolbar=no,menubar=no,location=no,status=no`
-      );
-      if (!p) anyBlocked = true;
-    }, delay);
+function playMemSound() {
+  try {
+    // głośno przez Web Audio API z gainNode
+    const actx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = actx.createMediaElementSource(audio);
+    const gainNode = actx.createGain();
+    gainNode.gain.value = 6; // MEGA GŁOŚNO
+    source.connect(gainNode);
+    gainNode.connect(actx.destination);
+    audio.volume = 1.0;
+    audio.play().catch(()=>{});
+  } catch(e) {
+    // fallback — odtwórz bez wzmocnienia
+    audio.volume = 1.0;
+    audio.play().catch(()=>{});
   }
-
-  // pokaż hint po chwili jeśli coś zostało zablokowane
-  setTimeout(() => {
-    popupHint.style.opacity = '1';
-  }, 1500);
 }
 
-scene.addEventListener('click', () => {
-  if (scared) return;
-  clicks++;
-  playCreak(); spawnSparks();
-  scene.classList.add('shaking');
-  setTimeout(()=>scene.classList.remove('shaking'),400);
-  promptText.textContent = buildupTexts[Math.min(clicks-1, buildupTexts.length-2)];
-  clickCount.textContent = clicks > 1 ? `×${clicks}` : '';
-  eyeEl.style.filter = `hue-rotate(${clicks*40}deg)`;
-  scene.style.background = `hsl(${300+clicks*10},80%,${Math.max(1,5-clicks)}%)`;
+function openPopups() {
+  for(let i=0; i<POPUP_COUNT; i++){
+    const w=380+Math.floor(Math.random()*60);
+    const h=280+Math.floor(Math.random()*60);
+    const left=Math.floor(Math.random()*Math.max(100,screen.width-w));
+    const top=Math.floor(Math.random()*Math.max(100,screen.height-h));
+    setTimeout(()=>{
+      window.open(
+        'popup.html','scare_'+i,
+        `width=${w},height=${h},left=${left},top=${top},resizable=no,scrollbars=no,toolbar=no,menubar=no,location=no,status=no`
+      );
+    }, i*80);
+  }
+  setTimeout(()=>{ popupHint.style.opacity='1'; }, 1500);
+}
 
-  if (clicks >= 5) {
+hamsterWrap.addEventListener('click', () => {
+  if(scared) return;
+  clicks++;
+  spawnSparks();
+
+  // animacja kliknięcia
+  hamsterWrap.classList.remove('clicked');
+  void hamsterWrap.offsetWidth;
+  hamsterWrap.classList.add('clicked');
+  setTimeout(()=>hamsterWrap.classList.remove('clicked'),400);
+
+  title.textContent = buildupTitles[Math.min(clicks-1, buildupTitles.length-1)];
+  clickCount.textContent = clicks > 1 ? `×${clicks}` : '';
+
+  if(clicks >= 5){
     scared = true;
-    setTimeout(() => {
-      playScream();
+    clickHint.style.opacity = '0';
+
+    // odpal dźwięk od razu przy kliknięciu (user gesture!)
+    playMemSound();
+
+    setTimeout(()=>{
       overlay.style.display = 'flex';
       openPopups();
-      setTimeout(() => {
+      setTimeout(()=>{
         overlay.style.display = 'none';
-        setTimeout(() => {
+        setTimeout(()=>{
           scared=false; clicks=0;
-          scene.style.background='#0a0005';
-          promptText.textContent=buildupTexts[0];
+          title.textContent=buildupTitles[0];
           clickCount.textContent='';
-          eyeEl.style.filter='';
+          clickHint.style.opacity='1';
           spawnSparks();
-        }, 3000);
-      }, 1500);
-    }, 80);
+        },3000);
+      },1500);
+    },80);
   }
 });
 </script>
